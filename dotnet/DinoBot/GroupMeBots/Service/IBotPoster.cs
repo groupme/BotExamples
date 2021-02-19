@@ -26,9 +26,9 @@ namespace GroupMeBots.Service
         /// <param name="emojiId">ID of the emoji within the pack to send</param>
         /// <param name="numToSend">Number of emoji to send with the message</param>
         /// <param name="botId">ID of the bot sending the message</param>
-        /// <param name="shouldDelay">(optional) The amount of time, in milliseconds, to delay before posting the message. Useful for replies, to ensure ordering.</param>
-        /// <param name="replyToMessageId">(optional) ID of the message to which this message is a reply. Defaults to null.</param>
-        /// <param name="baseReplyId">(optional) ID of the base message to which this message is a part of a thread. Defaults to null.</param>
+        /// <param name="delayMs">The amount of time, in milliseconds, to delay before posting the message. Useful for replies, to ensure ordering. Optional.</param>
+        /// <param name="replyToMessageId">ID of the message to which this message is a reply. Defaults to null. Optional.</param>
+        /// <param name="baseReplyId">ID of the base message to which this message is a part of a thread. Defaults to null. Optional.</param>
         /// <returns>Status of the outgoing operation to post the message</returns>
         Task<HttpStatusCode> PostEmojiAsync(int packId, int emojiId, int numToSend, string botId, int delayMs = 0, string replyToMessageId = null, string baseReplyId = null);
     }

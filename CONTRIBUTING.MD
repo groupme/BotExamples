@@ -4,3 +4,4 @@
 - All pull requests must be approved before merging
 - All changes should include testing
 - Do not include any connection strings, bot IDs, or other personal account / hosting information. This type of information should be pulled in via environment variables.
+- Do not change the StyleCop rules for .net projects

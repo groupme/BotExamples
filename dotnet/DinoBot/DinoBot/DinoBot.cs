@@ -22,8 +22,6 @@ namespace DinoBot
     /// </summary>
     public class Dinobot
     {
-        private static readonly Regex DinoRegex = new Regex("(.*\\D|^)(\\d+) (dino|dinolike|dino-like).*");
-
         private const string BotPostUrl = "https://api.groupme.com/v3/bots/post";
         private const string CanAddressDinoKey = "CanAddressDino";
         private const string DinoAddressTriggerKey = "DinoAddressTrigger";
@@ -35,8 +33,10 @@ namespace DinoBot
         private const int RandyEmoji = 47;
         private const int EmojiPostDelayMs = 500;
 
-        private HashSet<string> CanAddressDino = new HashSet<string>();
-        private List<string> DinoAddressTrigger = new List<string>(new string[] { "hey dinobot" });
+        private static readonly Regex DinoRegex = new Regex("(.*\\D|^)(\\d+) (dino|dinolike|dino-like).*");
+
+        private HashSet<string> _canAddressDino = new HashSet<string>();
+        private List<string> _dinoAddressTrigger = new List<string>(new string[] { "hey dinobot" });
         private IBotPoster _botPoster;
         private TraceWriter _log;
         private string _botId;
@@ -147,8 +147,8 @@ namespace DinoBot
         /// </summary>
         private void UpdateEnvironmentVariables()
         {
-            UpdateEnvironmentVariableForContainer(CanAddressDinoKey, CanAddressDino);
-            UpdateEnvironmentVariableForContainer(DinoAddressTriggerKey, DinoAddressTrigger);
+            UpdateEnvironmentVariableForContainer(CanAddressDinoKey, _canAddressDino);
+            UpdateEnvironmentVariableForContainer(DinoAddressTriggerKey, _dinoAddressTrigger);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace DinoBot
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
         private async Task<bool> CheckDinoAddressed(TraceWriter log, string messageText, MessageItem message, string botId)
         {
-            if ((CanAddressDino.Count == 0 || CanAddressDino.Contains(message.UserId)) && DinoAddressTrigger.Any(t => messageText.Contains(t)))
+            if ((_canAddressDino.Count == 0 || _canAddressDino.Contains(message.UserId)) && _dinoAddressTrigger.Any(t => messageText.Contains(t)))
             {
                 log?.Info("Dino addressed");
                 Attachment existingReply = message.GetExistingReply();
@@ -266,6 +266,7 @@ namespace DinoBot
             }
             return false;
         }
+
         /// <summary>
         /// Checks if the user requests the Randy emoji
         /// </summary>
@@ -292,9 +293,9 @@ namespace DinoBot
         /// </summary>
         /// <param name="log">Logger for the operation</param>
         /// <param name="messageText">Pre-processed text for the message</param>
+        /// <param name="message">The message being processed</param>
         /// <param name="botId">ID of the bot to send the message</param>
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
-        /// <returns></returns>
         private async Task<bool> CheckDinoQuestion(TraceWriter log, string messageText, MessageItem message, string botId)
         {
             if (messageText.Contains("?"))
