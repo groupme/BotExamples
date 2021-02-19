@@ -41,8 +41,8 @@ Save and enjoy!
 ### Customization
 You can set App Settings variables in Azure to change who can address DinoBot.
 
-- `CanAddressDino`: A comma-delimited list of user IDs that can use the "hey dinobot" command
-- `DinoAddressTrigger`: A comma-delimited list of phrases that Dinobot will respond to
+- `CanAddressDino`: A comma-delimited list of user IDs that can use the "hey dinobot" command. Should be lower case.
+- `DinoAddressTrigger`: A comma-delimited list of phrases that Dinobot will respond to. Should be lower case.
 
 These settings can be tested locally by creating a `local.settings` file in the `DinoBot` project and including them under `Values`. Do not deploy `local.settings` to Azure as it will be ignored.
 

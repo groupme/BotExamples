@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 using GroupMeShared.Model;
 
-namespace GroupMeBots
+namespace GroupMeBots.Model
 {
     /// <summary>
     /// Represents a bot message to be posted to GroupMe. Messages in the following JSON format:

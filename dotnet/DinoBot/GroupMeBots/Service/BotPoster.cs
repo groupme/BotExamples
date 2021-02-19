@@ -1,22 +1,33 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
+using GroupMeBots.Model;
 using GroupMeShared.Model;
 using GroupMeShared.Utilities;
 
-namespace GroupMeBots
+namespace GroupMeBots.Service
 {
     /// <summary>
     /// <see cref="BotPoster"/> is a class used to post messages to GroupMe with a bot
     /// </summary>
-    public class BotPoster
+    public class BotPoster : IBotPoster
     {
-        private const string BotPostUrl = "https://api.groupme.com/v3/bots/post";
         private const string EmojiPlaceholder = "�";
+        private string _botPostUrl;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BotPoster"/> class
+        /// </summary>
+        /// <param name="botPostUrl">GroupMe server URL to use to post the message</param>
+        public BotPoster(string botPostUrl)
+        {
+            _botPostUrl = botPostUrl;
+        }
 
         /// <summary>
         /// Posts a basic text message from a bit
@@ -24,22 +35,14 @@ namespace GroupMeBots
         /// <param name="text">Text to send to the group</param>
         /// <param name="botId">ID of the bot that sends the message</param>
         /// <returns>The status of the outgoing operation to post the message</returns>
-        public static async Task<HttpStatusCode> PostAsync(string text, string botId)
+        public async Task<HttpStatusCode> PostAsync(string text, string botId)
         {
             var post = new CreateBotPostRequest
             {
                 BotId = botId,
                 Text = text
             };
-
-            HttpStatusCode httpStatusCode;
-            using (StringContent content = JsonSerializer.SerializeToJson(post))
-            {
-                var client = new HttpClient();
-                HttpResponseMessage result = await client.PostAsync(BotPostUrl, content);
-                httpStatusCode = result != null ? result.StatusCode : HttpStatusCode.ServiceUnavailable;
-            }
-            return httpStatusCode;
+            return await PostBotMessage(post);
         }
 
         /// <summary>
@@ -53,7 +56,7 @@ namespace GroupMeBots
         /// <param name="replyToMessageId">(optional) ID of the message to which this message is a reply. Defaults to null.</param>
         /// <param name="baseReplyId">(optional) ID of the base message to which this message is a part of a thread. Defaults to null.</param>
         /// <returns>Status of the outgoing operation to post the message</returns>
-        public static async Task<HttpStatusCode> PostEmojiAsync(int packId, int emojiId, int numToSend, string botId, int delayMs = 0, string replyToMessageId = null, string baseReplyId = null)
+        public async Task<HttpStatusCode> PostEmojiAsync(int packId, int emojiId, int numToSend, string botId, int delayMs = 0, string replyToMessageId = null, string baseReplyId = null)
         {
             if (delayMs > 0)
             {
@@ -102,14 +105,27 @@ namespace GroupMeBots
             };
 
             // Send the message
-            HttpStatusCode httpStatusCode;
-            using (StringContent content = JsonSerializer.SerializeToJson(post))
+            return await PostBotMessage(post);
+        }
+
+        /// <summary>
+        /// Posts a bot message to the service
+        /// </summary>
+        /// <param name="request">Request to post</param>
+        /// <returns>Response code from the GroupMe service</returns>
+        private async Task<HttpStatusCode> PostBotMessage(CreateBotPostRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            using (StringContent content = JsonSerializer.SerializeToJson(request))
             {
                 var client = new HttpClient();
-                HttpResponseMessage result = await client.PostAsync(BotPostUrl, content);
-                httpStatusCode = result != null ? result.StatusCode : HttpStatusCode.ServiceUnavailable;
+                HttpResponseMessage result = await client.PostAsync(_botPostUrl, content);
+                return result != null ? result.StatusCode : HttpStatusCode.ServiceUnavailable;
             }
-            return httpStatusCode;
         }
     }
 }
