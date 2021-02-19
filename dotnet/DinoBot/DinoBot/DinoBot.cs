@@ -40,9 +40,23 @@ namespace DinoBot
         private IBotPoster _botPoster;
         private TraceWriter _log;
         private string _botId;
-        private MessageItem _message;
 
-        internal Dinobot(TraceWriter log, string botId, IBotPoster botPoster)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Dinobot"/> class
+        /// </summary>
+        /// <param name="botId">ID of the bot to use to post messages</param>
+        /// <param name="botPoster">IBotPoster to use to post bot messages</param>
+        public Dinobot(string botId, IBotPoster botPoster) : this(botId, botPoster, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Dinobot"/> class
+        /// </summary>
+        /// <param name="botId">ID of the bot to use to post messages</param>
+        /// <param name="botPoster">IBotPoster to use to post bot messages</param>
+        /// <param name="log">Logger to use. Optional.</param>
+        public Dinobot(string botId, IBotPoster botPoster, TraceWriter log)
         {
             if (botPoster == null)
             {
@@ -57,6 +71,11 @@ namespace DinoBot
             _botId = botId;
             _botPoster = botPoster;
         }
+
+        /// <summary>
+        /// Gets or sets the message to parse
+        /// </summary>
+        public MessageItem Message { get; set; }
 
         /// <summary>
         /// Message called when the Azure function is invoked
@@ -86,7 +105,7 @@ namespace DinoBot
             }
 
             var botPoster = new BotPoster(BotPostUrl);
-            var bot = new Dinobot(log, botId, botPoster);
+            var bot = new Dinobot(botId, botPoster, log);
             bool parsedMessage = await bot.ParseIncomingRequestAsync(req);
             if (parsedMessage)
             {
@@ -106,7 +125,7 @@ namespace DinoBot
         /// </summary>
         /// <param name="request">Incoming request</param>
         /// <returns>True if a message was properly parsed from the request</returns>
-        internal async Task<bool> ParseIncomingRequestAsync(HttpRequestMessage request)
+        public async Task<bool> ParseIncomingRequestAsync(HttpRequestMessage request)
         {
             if (request == null)
             {
@@ -114,23 +133,23 @@ namespace DinoBot
             }
 
             string content = await request.Content.ReadAsStringAsync();
-            _message = JsonSerializer.DeserializeJson<MessageItem>(content);
-            return _message?.Text != null;
+            Message = JsonSerializer.DeserializeJson<MessageItem>(content);
+            return Message?.Text != null;
         }
 
         /// <summary>
         /// Processes a message and sends dinos if necessary
         /// </summary>
         /// <returns>True if a bot message was sent, false if message was processed with no action</returns>
-        internal async Task<bool> ProcessMessageAsync()
+        public async Task<bool> ProcessMessageAsync()
         {
-            if (_message == null)
+            if (Message == null)
             {
                 return false;
             }
 
-            _log?.Info("Parsed message for " + _message.GroupId);
-            if (string.IsNullOrEmpty(_message.GroupId))
+            _log?.Info("Parsed message for " + Message.GroupId);
+            if (string.IsNullOrEmpty(Message.GroupId))
             {
                 _log?.Info("Not a group message, ignoring");
                 return false;
@@ -138,7 +157,7 @@ namespace DinoBot
             else
             {
                 UpdateEnvironmentVariables();
-                return await HandleIncomingMessageAsync(_log, _message, _botId);
+                return await HandleIncomingMessageAsync(Message, _botId);
             }
         }
 
@@ -177,38 +196,37 @@ namespace DinoBot
         /// <summary>
         /// Handles an incoming message and sends a bot message if appropriate
         /// </summary>
-        /// <param name="log">Logger for the operation</param>
         /// <param name="message">Message to process</param>
         /// <param name="botId">ID of the bot to use to send messages</param>
         /// <returns>True if a bot message was sent</returns>
-        private async Task<bool> HandleIncomingMessageAsync(TraceWriter log, MessageItem message, string botId)
+        private async Task<bool> HandleIncomingMessageAsync(MessageItem message, string botId)
         {
             // Checks for the type of messages Dinobot will respond to, in decreasing priority order
             // TODO: It would be cool if these were some sort of class-based trigger system you added to a collection rather than this if/else block
             string text = message.Text?.ToLower();
-            if (await CheckDinoRequest(log, text, message, botId))
+            if (await CheckDinoRequest(text, message, botId))
             {
-                log?.Info("Posted Dino");
+                _log?.Info("Posted Dino");
                 return true;
             }
-            else if (await CheckDinoAddressed(log, text, message, botId))
+            else if (await CheckDinoAddressed(text, message, botId))
             {
-                log?.Info("Dino responded");
+                _log?.Info("Dino responded");
                 return true;
             }
-            else if (await CheckRandy(log, text, botId))
+            else if (await CheckRandy(text, botId))
             {
-                log?.Info("Posted Randy");
+                _log?.Info("Posted Randy");
                 return true;
             }
-            else if (await CheckDinoQuestion(log, text, message, botId))
+            else if (await CheckDinoQuestion(text, message, botId))
             {
-                log?.Info("Posted DinoQ");
+                _log?.Info("Posted DinoQ");
                 return true;
             }
             else
             {
-                log?.Info("No dino message");
+                _log?.Info("No dino message");
             }
 
             return false;
@@ -219,20 +237,19 @@ namespace DinoBot
         /// 
         /// For example, a message contains the text "3 dinos" will result in 3 dino emojis sent by the bot.
         /// </summary>
-        /// <param name="log">Logger for the operation</param>
         /// <param name="messageText">Pre-processed text for the message</param>
         /// <param name="message">Message being processed</param>
         /// <param name="botId">ID of the bot to send the message</param>
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
-        private async Task<bool> CheckDinoRequest(TraceWriter log, string messageText, MessageItem message, string botId)
+        private async Task<bool> CheckDinoRequest(string messageText, MessageItem message, string botId)
         {
             Match match = DinoRegex.Match(messageText);
             if (match.Success && match.Groups.Count == 4)
             {
-                log?.Info("Found dino");
+                _log?.Info("Found dino");
                 string num = match.Groups[2].Value;
                 int dinos = Math.Min(int.Parse(num), MaxDinos);
-                log?.Info("Dinos:" + dinos.ToString());
+                _log?.Info("Dinos:" + dinos.ToString());
 
                 if (dinos > 0)
                 {
@@ -250,16 +267,15 @@ namespace DinoBot
         /// For example, a message containing the test "Hey DinoBot" will result in a dinosaur emoji being sent.
         /// The trigger text and users who can use this trigger are configurable via AppSettings
         /// </summary>
-        /// <param name="log">Logger for the operation</param>
         /// <param name="messageText">Pre-processed text for the message</param>
         /// <param name="message">Message being processed</param>
         /// <param name="botId">ID of the bot to send the message</param>
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
-        private async Task<bool> CheckDinoAddressed(TraceWriter log, string messageText, MessageItem message, string botId)
+        private async Task<bool> CheckDinoAddressed(string messageText, MessageItem message, string botId)
         {
             if ((_canAddressDino.Count == 0 || _canAddressDino.Contains(message.UserId)) && _dinoAddressTrigger.Any(t => messageText.Contains(t)))
             {
-                log?.Info("Dino addressed");
+                _log?.Info("Dino addressed");
                 Attachment existingReply = message.GetExistingReply();
                 HttpStatusCode response = await _botPoster.PostEmojiAsync(DinoPack, DinoEmoji, 1, botId, EmojiPostDelayMs, existingReply?.ReplyId ?? null, existingReply?.BaseReplyId ?? null);
                 return response == HttpStatusCode.Accepted;
@@ -270,18 +286,17 @@ namespace DinoBot
         /// <summary>
         /// Checks if the user requests the Randy emoji
         /// </summary>
-        /// <param name="log">Logger for the operation</param>
         /// <param name="messageText">Pre-processed text for the message</param>
         /// <param name="botId">ID of the bot to send the message</param>
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
-        private async Task<bool> CheckRandy(TraceWriter log, string messageText, string botId)
+        private async Task<bool> CheckRandy(string messageText, string botId)
         {
             if (messageText.Contains("(randy pooping)"))
             {
                 HttpStatusCode response = await _botPoster.PostEmojiAsync(RandyPack, RandyEmoji, 1, botId, EmojiPostDelayMs);
                 if (response == HttpStatusCode.Accepted)
                 {
-                    log?.Info("Posted Randy:" + response.ToString());
+                    _log?.Info("Posted Randy:" + response.ToString());
                     return true;
                 }
             }
@@ -291,12 +306,11 @@ namespace DinoBot
         /// <summary>
         /// Checks if the user asked a question and uses the most sophisticated AI to determine if Dinobot should respond
         /// </summary>
-        /// <param name="log">Logger for the operation</param>
         /// <param name="messageText">Pre-processed text for the message</param>
         /// <param name="message">The message being processed</param>
         /// <param name="botId">ID of the bot to send the message</param>
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
-        private async Task<bool> CheckDinoQuestion(TraceWriter log, string messageText, MessageItem message, string botId)
+        private async Task<bool> CheckDinoQuestion(string messageText, MessageItem message, string botId)
         {
             if (messageText.Contains("?"))
             {
@@ -304,7 +318,7 @@ namespace DinoBot
                 double val = rand.NextDouble();
                 if (val <= ResponseWeight)
                 {
-                    log?.Info("Posting response");
+                    _log?.Info("Posting response");
                     Attachment existingReply = message.GetExistingReply();
                     HttpStatusCode response = await _botPoster.PostEmojiAsync(DinoPack, DinoEmoji, 1, botId, EmojiPostDelayMs, message.MessageId, existingReply?.BaseReplyId ?? null);
                     return response == HttpStatusCode.Accepted;

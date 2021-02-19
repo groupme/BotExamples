@@ -51,3 +51,4 @@ These settings can be tested locally by creating a `local.settings` file in the 
 - Move shared code to a re-usable nuget package
 - Make Dinobot do math, e.g. "10-3 dinos"
 - Make more things configurable, like the maximum number of dinos
+- More detailed tests
