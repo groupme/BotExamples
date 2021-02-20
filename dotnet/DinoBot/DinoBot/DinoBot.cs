@@ -25,7 +25,6 @@ namespace DinoBot
         private const string BotPostUrl = "https://api.groupme.com/v3/bots/post";
         private const string CanAddressDinoKey = "CanAddressDino";
         private const string DinoAddressTriggerKey = "DinoAddressTrigger";
-        private const double ResponseWeight = 0.075;
         private const int MaxDinos = 100;
         private const int DinoPack = 1;
         private const int DinoEmoji = 62;
@@ -39,6 +38,7 @@ namespace DinoBot
         private List<string> _dinoAddressTrigger = new List<string>(new string[] { "hey dinobot" });
         private IBotPoster _botPoster;
         private TraceWriter _log;
+        private IDinoAI _dinoAi;
         private string _botId;
 
         /// <summary>
@@ -46,7 +46,8 @@ namespace DinoBot
         /// </summary>
         /// <param name="botId">ID of the bot to use to post messages</param>
         /// <param name="botPoster">IBotPoster to use to post bot messages</param>
-        public Dinobot(string botId, IBotPoster botPoster) : this(botId, botPoster, null)
+        /// <param name="dinoAi">IDinoAI to use to determine if DinoBot should respond to messages</param>
+        public Dinobot(string botId, IBotPoster botPoster, IDinoAI dinoAi) : this(botId, botPoster, dinoAi, null)
         {
         }
 
@@ -55,8 +56,9 @@ namespace DinoBot
         /// </summary>
         /// <param name="botId">ID of the bot to use to post messages</param>
         /// <param name="botPoster">IBotPoster to use to post bot messages</param>
+        /// <param name="dinoAi">IDinoAI to use to determine if DinoBot should respond to messages</param>
         /// <param name="log">Logger to use. Optional.</param>
-        public Dinobot(string botId, IBotPoster botPoster, TraceWriter log)
+        public Dinobot(string botId, IBotPoster botPoster, IDinoAI dinoAi, TraceWriter log)
         {
             if (botPoster == null)
             {
@@ -66,10 +68,15 @@ namespace DinoBot
             {
                 throw new ArgumentNullException(botId);
             }
+            if (dinoAi == null)
+            {
+                throw new ArgumentNullException(nameof(dinoAi));
+            }
 
             _log = log;
             _botId = botId;
             _botPoster = botPoster;
+            _dinoAi = dinoAi;
         }
 
         /// <summary>
@@ -105,7 +112,8 @@ namespace DinoBot
             }
 
             var botPoster = new BotPoster(BotPostUrl);
-            var bot = new Dinobot(botId, botPoster, log);
+            var dinoAi = new DinoAI();
+            var bot = new Dinobot(botId, botPoster, dinoAi, log);
             bool parsedMessage = await bot.ParseIncomingRequestAsync(req);
             if (parsedMessage)
             {
@@ -312,17 +320,12 @@ namespace DinoBot
         /// <returns>True if a message was sent by the bot, otherwise false</returns>
         private async Task<bool> CheckDinoQuestion(string messageText, MessageItem message, string botId)
         {
-            if (messageText.Contains("?"))
+            if (_dinoAi.ShouldDinoRespond(messageText))
             {
-                Random rand = new Random();
-                double val = rand.NextDouble();
-                if (val <= ResponseWeight)
-                {
-                    _log?.Info("Posting response");
-                    Attachment existingReply = message.GetExistingReply();
-                    HttpStatusCode response = await _botPoster.PostEmojiAsync(DinoPack, DinoEmoji, 1, botId, EmojiPostDelayMs, message.MessageId, existingReply?.BaseReplyId ?? null);
-                    return response == HttpStatusCode.Accepted;
-                }
+                _log?.Info("Posting response");
+                Attachment existingReply = message.GetExistingReply();
+                HttpStatusCode response = await _botPoster.PostEmojiAsync(DinoPack, DinoEmoji, 1, botId, EmojiPostDelayMs, message.MessageId, existingReply?.BaseReplyId ?? null);
+                return response == HttpStatusCode.Accepted;
             }
             return false;
         }

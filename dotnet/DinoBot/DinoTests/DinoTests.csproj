@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AttachmentTests.cs" />
+    <Compile Include="DinoAiTests.cs" />
     <Compile Include="DinobotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

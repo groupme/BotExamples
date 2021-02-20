@@ -36,7 +36,14 @@ namespace GroupMeShared.Utilities
         /// </returns>
         public static T DeserializeJson<T>(string result)
         {
-            return JsonConvert.DeserializeObject<T>(result);
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(result);
+            }
+            catch (JsonReaderException)
+            {
+                return default(T);
+            }
         }
 
         /// <summary>
