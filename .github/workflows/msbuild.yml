@@ -35,4 +35,4 @@ jobs:
       uses: darenm/Setup-VSTest@v1
       
     - name: Test DinoBot
-      run: vstext.console.exe **\DinoTests.dll
+      run: vstest.console.exe **\DinoTests.dll
