@@ -8,6 +8,10 @@ DinoBot is a fun, engaging bot that sends the GroupMe dinosaur emoji to your gro
 
 ## Building and Deploying DinoBot
 
+DinoBot is designed to run as an [Azure Function](https://azure.microsoft.com/en-us/services/functions) that is triggered when messages are sent to the group in which it is installed. The instructions provided below explain how to install DinoBot with an Azure Function as the host.
+
+There is no hard requirement to use Azure Functions, though. The majority of the code is portable to any C#-based hosting solution. Just set up your own listener, and instantiate and invoke `DinoBot` in the same manner as the [Run](https://github.com/groupme/BotExamples/blob/6b4bcbcbfe00ea493e8abac2327d122d5bf2f7b3/dotnet/DinoBot/DinoBot/DinoBot.cs#L102) method.
+
 ### Requirements
 
 - An active Azure account
@@ -30,7 +34,7 @@ Your bot is now ready to use! Now, add the bot to GroupMe
 
 1) Open https://dev.groupme.com and click `Bots` at the top
 2) Click `Create Bot`
-3) Choose your group and avatar. We recommend using https://powerups.s3.amazonaws.com/emoji/1/sticker/xxxhdpi/62.png
+3) Choose your group and avatar. We recommend using [dino_avatar.png](dino_avatar.png)
 4) Set the Azure Function URL from step 9 above as the `Callback URL`
 5) Save the new bot
 6) Copy the `botId` for the newly created bot

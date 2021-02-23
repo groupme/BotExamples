@@ -66,7 +66,7 @@ namespace DinoBot
             }
             if (string.IsNullOrWhiteSpace(botId))
             {
-                throw new ArgumentNullException(botId);
+                throw new ArgumentNullException(nameof(botId));
             }
             if (dinoAi == null)
             {
