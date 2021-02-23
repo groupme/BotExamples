@@ -66,7 +66,7 @@ namespace DinoBot
             }
             if (string.IsNullOrWhiteSpace(botId))
             {
-                throw new ArgumentNullException(botId);
+                throw new ArgumentNullException(nameof(botId));
             }
             if (dinoAi == null)
             {
@@ -151,7 +151,7 @@ namespace DinoBot
         /// <returns>True if a bot message was sent, false if message was processed with no action</returns>
         public async Task<bool> ProcessMessageAsync()
         {
-            if (Message == null)
+            if (Message?.Text == null)
             {
                 return false;
             }
