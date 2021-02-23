@@ -151,7 +151,7 @@ namespace DinoBot
         /// <returns>True if a bot message was sent, false if message was processed with no action</returns>
         public async Task<bool> ProcessMessageAsync()
         {
-            if (Message == null)
+            if (Message?.Text == null)
             {
                 return false;
             }
