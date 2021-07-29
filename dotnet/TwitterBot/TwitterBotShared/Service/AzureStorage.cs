@@ -52,7 +52,7 @@ namespace TwitterBotShared.Service
         /// <returns>Created/opened table</returns>
         private static async Task<CloudTable> GetBotTableAsync()
         {
-            CloudStorageAccount account = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=gmtwitterbots;AccountKey=Yah8b5K2MrmXkeQR6TizahzQnQ/KvN4RATa3yjLpZL7p3mpXelCOxdcy6LRPEcCmu5ceCgDD7OU0kLdOYEjooQ==;EndpointSuffix=core.windows.net");//Environment.GetEnvironmentVariable("TwitterBotStorageKey"));
+            CloudStorageAccount account = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("TwitterBotStorageKey"));
             var tableClient = account.CreateCloudTableClient();
             var table = tableClient.GetTableReference("twitterbots");
             await table.CreateIfNotExistsAsync();
