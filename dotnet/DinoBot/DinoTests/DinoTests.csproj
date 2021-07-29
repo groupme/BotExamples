@@ -76,11 +76,11 @@
       <Project>{78C1A8E2-9C41-4DD9-A272-6D75A7968704}</Project>
       <Name>DinoBot</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GroupMeBots\GroupMeBots.csproj">
+    <ProjectReference Include="..\..\GroupMeBots\GroupMeBots.csproj">
       <Project>{1914515D-F3A7-4A5A-B1D3-891470021979}</Project>
       <Name>GroupMeBots</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GroupMeShared\GroupMeShared.csproj">
+    <ProjectReference Include="..\..\GroupMeShared\GroupMeShared.csproj">
       <Project>{6AEE518E-62E1-4AA2-A7A4-9308966115F9}</Project>
       <Name>GroupMeShared</Name>
     </ProjectReference>

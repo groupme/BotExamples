@@ -12,8 +12,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GroupMeBots\GroupMeBots.csproj" />
-    <ProjectReference Include="..\GroupMeShared\GroupMeShared.csproj" />
+    <ProjectReference Include="..\..\GroupMeBots\GroupMeBots.csproj" />
+    <ProjectReference Include="..\..\GroupMeShared\GroupMeShared.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
