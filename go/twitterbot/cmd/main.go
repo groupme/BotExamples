@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	flagTweetTracks      = flag.String("tweet-tracks", "groupme,cats,burrito", "What tags to filter on. Passed as a single comma seperated string")
+	flagTweetQuery       = flag.String("tweet-query", "groupme,cats,burrito", "What tags to filter on. Passed as a single comma seperated string")
 	flagGroupMeBotID     = flag.String("groupme-bot-id", "", "Identifier for your bot on GroupMe")
 	flagTwitterAppKey    = flag.String("twitter-app-key", "", "Developer Key associated with your twitter project")
 	flagTwitterAppSecret = flag.String("twitter-app-secret", "", "Developer secret associated with your twitter project")
@@ -28,7 +28,7 @@ func main() {
 	twitterClient, _ := twitterbot.NewTwitterClient(*flagTwitterAppKey, *flagTwitterAppSecret)
 	botClient, _ := twitterbot.NewBotClient(*flagGroupMeBotID)
 
-	poster, err := twitterbot.NewTwitterPoster(twitterClient, botClient, strings.Split(*flagTweetTracks, ",")...)
+	poster, err := twitterbot.NewTwitterPoster(twitterClient, botClient, strings.Split(*flagTweetQuery, ",")...)
 	if err != nil {
 		panic(err)
 	}
@@ -38,7 +38,7 @@ func main() {
 
 	<-ctx.Done()
 
-	err = poster.StopListening()
+	poster.StopListening()
 	if err != nil {
 		panic(err)
 	}

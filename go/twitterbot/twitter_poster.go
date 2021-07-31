@@ -18,6 +18,7 @@ type TwitterPoster struct {
 	tags           []string
 	tweetStream    chan (twitter.Tweet)
 	stop           chan (bool)
+	stopped        chan (bool)
 	sinceIdHorizon int64
 }
 
@@ -47,6 +48,7 @@ func (tp *TwitterPoster) StartListening(sleepDuration time.Duration) {
 		for {
 			select {
 			case <-tp.stop:
+				tp.stopped <- true
 				return
 			default:
 				tp.fetchTweets()
@@ -108,8 +110,8 @@ func (tp *TwitterPoster) fetchTweets() {
 }
 
 // StopListening causes the TwitterFilterPoster to stop listening for tweets
-func (tp *TwitterPoster) StopListening() error {
+func (tp *TwitterPoster) StopListening() {
 	close(tp.tweetStream)
 	tp.stop <- true
-	return nil
+	<-tp.stopped
 }
