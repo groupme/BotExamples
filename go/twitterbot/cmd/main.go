@@ -39,7 +39,4 @@ func main() {
 	<-ctx.Done()
 
 	poster.StopListening()
-	if err != nil {
-		panic(err)
-	}
 }
