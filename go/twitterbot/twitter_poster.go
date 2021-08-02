@@ -36,8 +36,8 @@ func NewTwitterPoster(tc *twitter.Client, bc *BotClient, tags ...string) (*Twitt
 		twitterClient: tc,
 		botclient:     bc,
 		tags:          tags,
-		// Initialize twitter stream with 200 tweets
-		tweetStream: make(chan twitter.Tweet, 200),
+		// initializing the size of the tweet stream equal to the count we anticipate an individual request to have
+		tweetStream: make(chan twitter.Tweet, 10),
 		stop:        make(chan bool),
 	}, nil
 }
@@ -77,7 +77,6 @@ func (tp *TwitterPoster) fetchTweets() {
 	log.Printf("Fetching tweets since %d\n", tp.sinceIdHorizon)
 	// https://developer.twitter.com/en/docs/twitter-api/v1/tweets/search/api-reference/get-search-tweets
 	payload, response, err := tp.twitterClient.Search.Tweets(&twitter.SearchTweetParams{
-		Count:      100,
 		Query:      strings.Join(tp.tags, " OR "),
 		SinceID:    tp.sinceIdHorizon,
 		ResultType: "recent",

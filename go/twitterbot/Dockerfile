@@ -11,3 +11,5 @@ RUN chmod +x /app/bin/main
 FROM base as runtime 
 
 COPY --from=builder /app/bin/main . 
+	
+CMD /app/main -tweet-query=${TWEET_QUERY} -groupme-bot-id=${GROUPME_BOT_ID} -twitter-app-key=${TWITTER_APP_KEY} -twitter-app-secret=${TWITTER_APP_SECRET}
